@@ -20,7 +20,7 @@ import (
 func main() {
 
 	serve(
-		[]string{"/"},
+		[]string{"/webhook"},
 		[]string{http.MethodPost, http.MethodOptions},
 		[]func(http.ResponseWriter, *http.Request){func(w http.ResponseWriter, r *http.Request) {}},
 	)
