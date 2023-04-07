@@ -11,6 +11,11 @@ func GetWhatsAppWebhookVerificationToken() string {
 	return failIfEmpty("WHATSAPP_VERIFICATION_TOKEN")
 }
 
+func GetSlackUrl() string {
+
+	return failIfEmpty("SLACK_URL")
+}
+
 func failIfEmpty(key string) string {
 
 	res := os.Getenv(key)

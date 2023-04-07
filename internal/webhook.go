@@ -10,12 +10,14 @@ import (
 
 type Api struct {
 	webhookVerificationToken string
+	slackUrl                 string
 }
 
 func NewApi() *Api {
 
 	return &Api{
 		webhookVerificationToken: env.GetWhatsAppWebhookVerificationToken(),
+		slackUrl:                 env.GetSlackUrl(),
 	}
 }
 
@@ -54,5 +56,18 @@ func (api *Api) WebhookEventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+
+	pretty, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		logrus.Infof("failed to marshal webhook message with '%v'")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	err = SendSlackMessage(api.slackUrl, string(pretty))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusAccepted)
 }
