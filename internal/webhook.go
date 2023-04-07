@@ -30,14 +30,7 @@ func (api *Api) WebhookVerificationHandler(w http.ResponseWriter, r *http.Reques
 
 	if len(mode) > 0 && len(token) > 0 {
 		if mode == "subscribe" && token == api.webhookVerificationToken {
-			w.WriteHeader(http.StatusOK)
-			data, err := json.Marshal(challenge)
-			if err != nil {
-				logrus.Errorf("failed to marshal challenge with '%v'", err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			w.Write(data)
+			w.Write([]byte(challenge))
 			return
 		}
 		w.WriteHeader(http.StatusForbidden)
