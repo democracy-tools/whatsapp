@@ -8,18 +8,18 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Handle struct {
+type Api struct {
 	webhookVerificationToken string
 }
 
-func NewHandle() *Handle {
+func NewApi() *Api {
 
-	return &Handle{
+	return &Api{
 		webhookVerificationToken: env.GetWhatsAppWebhookVerificationToken(),
 	}
 }
 
-func (h *Handle) WebhookVerificationHandler(w http.ResponseWriter, r *http.Request) {
+func (api *Api) WebhookVerificationHandler(w http.ResponseWriter, r *http.Request) {
 
 	key := r.URL.Query()
 	mode := key.Get("hub.mode")
@@ -27,7 +27,7 @@ func (h *Handle) WebhookVerificationHandler(w http.ResponseWriter, r *http.Reque
 	challenge := key.Get("hub.challenge")
 
 	if len(mode) > 0 && len(token) > 0 {
-		if mode == "subscribe" && token == h.webhookVerificationToken {
+		if mode == "subscribe" && token == api.webhookVerificationToken {
 			w.WriteHeader(http.StatusOK)
 			data, err := json.Marshal(challenge)
 			if err != nil {
@@ -42,4 +42,17 @@ func (h *Handle) WebhookVerificationHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	w.WriteHeader(http.StatusBadRequest)
+}
+
+func (api *Api) WebhookEventHandler(w http.ResponseWriter, r *http.Request) {
+
+	var payload WebhookMessage
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		logrus.Infof("failed to decode webhook message with '%v'")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+	w.WriteHeader(http.StatusAccepted)
 }

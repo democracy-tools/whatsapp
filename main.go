@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/democracy-tools/whatsapp/internal"
 	"github.com/gorilla/mux"
 	"github.com/onrik/logrus/filename"
 	log "github.com/sirupsen/logrus"
@@ -19,10 +20,11 @@ import (
 
 func main() {
 
+	api := internal.NewApi()
 	serve(
-		[]string{"/webhook"},
-		[]string{http.MethodPost, http.MethodOptions},
-		[]func(http.ResponseWriter, *http.Request){func(w http.ResponseWriter, r *http.Request) {}},
+		[]string{"/webhook", "/webhook"},
+		[]string{http.MethodGet, http.MethodPost},
+		[]func(http.ResponseWriter, *http.Request){api.WebhookVerificationHandler, api.WebhookEventHandler},
 	)
 }
 
