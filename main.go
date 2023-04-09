@@ -20,12 +20,43 @@ import (
 
 func main() {
 
-	api := internal.NewApi()
-	serve(
-		[]string{"/webhook", "/webhook"},
-		[]string{http.MethodGet, http.MethodPost},
-		[]func(http.ResponseWriter, *http.Request){api.WebhookVerificationHandler, api.WebhookEventHandler},
+	const (
+		webhook = "/webhook"
+		reply   = "/reply"
 	)
+	api := internal.NewApi()
+	handle := internal.NewHandle()
+	serve(
+		[]string{
+			webhook, webhook,
+			reply, reply,
+		}, []string{
+			http.MethodGet, http.MethodPost,
+			http.MethodGet, http.MethodOptions,
+		}, []func(http.ResponseWriter, *http.Request){
+			api.WebhookVerificationHandler, api.WebhookEventHandler,
+			access(handle.Reply), options([]string{http.MethodGet}),
+		},
+	)
+}
+
+func access(next func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		next(w, r)
+	}
+}
+
+func options(methods []string) func(http.ResponseWriter, *http.Request) {
+
+	return func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
+		w.Header().Set("Access-Control-Allow-Headers", "*")
+		w.Header().Set("Access-Control-Max-Age", "3600")
+		w.WriteHeader(http.StatusNoContent)
+	}
 }
 
 func serve(path []string, method []string,

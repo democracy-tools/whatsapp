@@ -6,6 +6,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func GetWhatAppToken() string {
+
+	return failIfEmpty("WHATSAPP_TOKEN")
+}
+
+func GetWhatsAppFromPhone() string {
+
+	return failIfEmpty("WHATSAPP_FROM_PHONE")
+}
+
 func GetWhatsAppWebhookVerificationToken() string {
 
 	return failIfEmpty("WHATSAPP_VERIFICATION_TOKEN")
