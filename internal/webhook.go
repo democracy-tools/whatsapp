@@ -1,7 +1,9 @@
 package internal
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/democracy-tools/whatsapp/internal/env"
@@ -50,7 +52,7 @@ func (api *Api) WebhookEventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	pretty, err := json.MarshalIndent(payload, "", "  ")
+	pretty, err := buildMessage(payload)
 	if err != nil {
 		logrus.Infof("failed to marshal webhook message with '%v'")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -63,4 +65,24 @@ func (api *Api) WebhookEventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusAccepted)
+}
+
+func buildMessage(message WebhookMessage) ([]byte, error) {
+
+	if len(message.Entry) == 1 && len(message.Entry[0].Changes) == 1 {
+		var res bytes.Buffer
+		change := message.Entry[0].Changes[0]
+		contact := change.Value.Contacts[0]
+		res.WriteString(fmt.Sprintf("%s (%s)\n", contact.Profile.Name, contact.WaID))
+		for _, currMessage := range change.Value.Messages {
+			if currMessage.Type == "text" {
+				res.WriteString(fmt.Sprintf("%s\n", currMessage.Text))
+			} else {
+				res.WriteString(fmt.Sprintf("%s\n", currMessage.Type))
+			}
+		}
+		return res.Bytes(), nil
+	}
+
+	return json.MarshalIndent(message, "", "  ")
 }
