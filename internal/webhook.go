@@ -76,7 +76,7 @@ func buildMessage(message WebhookMessage) ([]byte, error) {
 		res.WriteString(fmt.Sprintf("%s (%s)\n", contact.Profile.Name, contact.WaID))
 		for _, currMessage := range change.Value.Messages {
 			if currMessage.Type == "text" {
-				res.WriteString(fmt.Sprintf("%s\n", currMessage.Text))
+				res.WriteString(fmt.Sprintf("%s\n", currMessage.Text.Body))
 			} else {
 				res.WriteString(fmt.Sprintf("%s\n", currMessage.Type))
 			}
